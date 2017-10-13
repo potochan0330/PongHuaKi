@@ -1,5 +1,7 @@
 # PongHuaKi
 Board Game - PongHuaKi 
+
+
   Step for starting game:
         1. Choose number of player.
         2. Click Start button.
