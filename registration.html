@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <title>Registration Page</title>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCG-xUApy7CnQ2oAXdPJoVYMfF1FlBzJCM&signed_in=true&callback=initMap"
+        async defer>
+</script>
+<script type="text/javascript">
+
+    var user_lat =22.302516;        //default address in Polyu
+    var user_lng =114.17892800000004;
+
+    $(document).ready(function(){
+        $("#send").click(function(){
+            //alert("clicked");
+            if( $("#pw").val() != $("#pw2").val()){
+                alert("Passwords are not matched");
+            }
+            else {
+                if($("#pw").val().length < 8) {
+                    alert("THe length of the passwords must longer then 8");
+                }
+                else{
+                    if ($("#ac").val().length <= 5 ) {
+                        alert("The length of username must longer then 5 ");
+                    }
+                    else {
+                       /* $.post("http://15042824d.coms.hk/COMP3421/php/check_usn.php",
+                                {
+                                    Username: $("#ac").val()
+                                },
+                                function (data) {
+                                    if(data==0)
+                                        checkfile();
+                                    else
+                                        alert("Username are used, Please change.");
+                                });*/
+                        checkfile();
+                    }
+                }
+            }
+        });
+    });
+
+    function checkfile(){
+        $.post("http://15042824d.coms.hk/COMP3421/php/insert_user.php",
+                {
+                    Account: $("#ac").val(),
+                    Password: $("#pw").val(),
+                    Sex: $('input[name=gender]:checked').val(),
+                    Location_lat: user_lat,
+                    Location_lng: user_lng,
+                    Score: 0
+                },
+                function () {
+                    alert("Successful registration");
+                });
+    }
+
+    function initMap() {
+        var map = new google.maps.Map(document.getElementById('loc'), {
+            zoom: 15,
+            center: {lat: -34.397, lng: 150.644}
+        });
+        var geocoder = new google.maps.Geocoder();
+
+        document.getElementById('submit').addEventListener('click', function() {
+            geocodeAddress(geocoder, map);
+        });
+    }
+
+    function geocodeAddress(geocoder, resultsMap) {
+        var address = document.getElementById('address').value;
+        geocoder.geocode({'address': address}, function(results, status) {
+            if (status === google.maps.GeocoderStatus.OK) {
+                resultsMap.setCenter(results[0].geometry.location);
+                var marker = new google.maps.Marker({
+                    map: resultsMap,
+                    position: results[0].geometry.location
+                });
+                var temp = results[0].geometry.location;
+                //alert(temp.toString());
+                var temp2 =  temp.toString().split(", ");
+                user_lat = temp2[0].replace("(","");
+                user_lng = temp2[1].replace(")","");
+                //alert(user_lng);
+            } else {
+                alert('Geocode was not successful for the following reason: ' + status);
+            }
+        });
+    }
+
+</script>
+<body>
+    <center>
+        <p style="font-size: 24px"> Registration</p>
+        <form style="width:100%; align: center" id="user_info">
+            User Name:<br>
+            <input type="text" name="username" id="ac"><br><br>
+            Password: <br>
+            <input type="password" name="password" id="pw"><br><br>
+            Confirm Password: <br>
+            <input type="password" name="password2" id="pw2"><br><br>
+            Sex:
+            <br>
+            <input type="radio" name="gender" value="male" checked> Male
+            <input type="radio" name="gender" value="female"> Female<br>
+            Location:<br>
+            <input id="address" type="textbox" value="Hong Kong Polytechnic University">
+            <input id="submit" type="button" value="Find">
+            <div id="loc" style="height: 300px; width: 300px"></div><br>
+            <br>
+            <button id="send"> Submit</button>
+            <input type="reset">
+        </form>
+    </center>
+</body>
+</html>

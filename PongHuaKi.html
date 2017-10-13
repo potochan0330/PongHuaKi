@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,8 +6,9 @@
     <title>Pong Hua Ki</title>
     <link rel="stylesheet" type="text/css" href="q1css.css">
 
-    <script>
-        var time = 30;
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        var time = 60;
         var player = 1;
         var board_size = 6;
         var DragParentNode = null;
@@ -16,14 +18,22 @@
         var Bwinflag2 = false;
         var ai_on = false;
         var timecount;
+        var reset_chess;    //used for set interval to update the chessboard
+        var num_player = 1;
+        var read_att;
+
 
         function start(){
             initialize();
-            timecount = setInterval(timer,1000);
+            check_player();
+
+            reset_chess = setInterval(read_chess_posi, 1000);
+            //read_att = setInterval(read_chess_attr, 2000);
         }
 
         function stop() {   //stop the game
             document.location.reload();
+            $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
         }
 
         function timer(){   //timer for the round change
@@ -46,113 +56,97 @@
         }
 
         function drop(ev) {
+            var para = getURLParameter('username');
             ev.preventDefault();
             var data = ev.dataTransfer.getData("text");
-            if(ev.target.getAttribute("reserved")=="0") {
-                switch (DragParentNode.getAttribute("value")){
-                    case "1":
-                        if(ev.target.getAttribute("value") == "3" || ev.target.getAttribute("value") == "4"){
-                            ev.target.appendChild(document.getElementById(data));
-                            ev.target.setAttribute("reserved", "1");
-                            DragParentNode.setAttribute("reserved", "0");
-                            if(ai_on == true){
-                                ai();
+            $.post("http://15042824d.coms.hk/COMP3421/php/read_room.php",           //used for get the username of player
+                    {
+                        Round: player
+                    },
+                    function (user) {
+                        if(user ==para) {
+                            if (ev.target.getAttribute("reserved") == "0") {
+                                switch (DragParentNode.getAttribute("value")) {
+                                    case "1":
+                                        if (ev.target.getAttribute("value") == "3" || ev.target.getAttribute("value") == "4") {
+                                            ev.target.appendChild(document.getElementById(data));
+                                            ev.target.setAttribute("reserved", "1");
+                                            DragParentNode.setAttribute("reserved", "0");
+                                            write_chess_posi();
+                                            write_board();
+                                            read_turn();
+                                            changeplayer(player);
+                                        }
+                                        else {
+                                            alert("Too far to move!");
+                                        }
+                                        break;
+                                    case "2":
+                                        if (ev.target.getAttribute("value") == "3" || ev.target.getAttribute("value") == "5") {
+                                            ev.target.appendChild(document.getElementById(data));
+                                            ev.target.setAttribute("reserved", "1");
+                                            DragParentNode.setAttribute("reserved", "0");
+                                            write_chess_posi();
+                                            write_board();
+                                            read_turn();
+                                            changeplayer(player);
+                                        }
+                                        else {
+                                            alert("Too far to move!");
+                                        }
+                                        break;
+                                    case "4":
+                                        if (ev.target.getAttribute("value") != "2") {
+                                            ev.target.appendChild(document.getElementById(data));
+                                            ev.target.setAttribute("reserved", "1");
+                                            DragParentNode.setAttribute("reserved", "0");
+                                            write_chess_posi();
+                                            write_board();
+                                            read_turn();
+                                            changeplayer(player);
+                                        }
+                                        else {
+                                            alert("Too far to move!");
+                                        }
+                                        break;
+                                    case "5":
+                                        if (ev.target.getAttribute("value") != "1") {
+                                            ev.target.appendChild(document.getElementById(data));
+                                            ev.target.setAttribute("reserved", "1");
+                                            DragParentNode.setAttribute("reserved", "0");
+                                            write_chess_posi();
+                                            write_board();
+                                            read_turn();
+                                            changeplayer(player);
+
+                                        }
+                                        else {
+                                            alert("Too far to move!");
+                                        }
+                                        break;
+                                    default:
+                                        ev.target.appendChild(document.getElementById(data));
+                                        ev.target.setAttribute("reserved", "1");
+                                        DragParentNode.setAttribute("reserved", "0");
+                                        write_chess_posi();
+                                        write_board();
+                                        read_turn();
+                                        changeplayer(player);
+                                        break;
+                                }
                             }
-                            else{
-                                changeplayer(player);
-                            }
-                        }
-                        else {
-                            alert("Too far to move!");
-                        }
-                        break;
-                    case "2":
-                        if(ev.target.getAttribute("value") == "3" || ev.target.getAttribute("value") == "5"){
-                            ev.target.appendChild(document.getElementById(data));
-                            ev.target.setAttribute("reserved", "1");
-                            DragParentNode.setAttribute("reserved", "0");
-                            if(ai_on == true){
-                                ai();
-                            }
-                            else{
-                                changeplayer(player);
-                            }
-                        }
-                        else {
-                            alert("Too far to move!");
-                        }
-                        break;
-                    case "4":
-                        if(ev.target.getAttribute("value") != "2"){
-                            ev.target.appendChild(document.getElementById(data));
-                            ev.target.setAttribute("reserved", "1");
-                            DragParentNode.setAttribute("reserved", "0");
-                            if(ai_on == true){
-                                ai();
-                            }
-                            else{
-                                changeplayer(player);
-                            }
-                        }
-                        else {
-                            alert("Too far to move!");v
-                        }
-                        break;
-                    case "5":
-                        if(ev.target.getAttribute("value") != "1"){
-                            ev.target.appendChild(document.getElementById(data));
-                            ev.target.setAttribute("reserved", "1");
-                            DragParentNode.setAttribute("reserved", "0");
-                            if(ai_on == true){
-                                ai();
-                            }
-                            else{
-                                changeplayer(player);
-                            }
-                        }
-                        else {
-                            alert("Too far to move!");
-                        }
-                        break;
-                    default:
-                        ev.target.appendChild(document.getElementById(data));
-                        ev.target.setAttribute("reserved", "1");
-                        DragParentNode.setAttribute("reserved", "0");
-                        if(ai_on == true){
-                            ai();
+                            checkRwin();
+                            checkBwin();
                         }
                         else{
-                            changeplayer(player);
+                            alert("Not Your turn.");
                         }
-                        break;
-                }
-            }
-            checkRwin();
-            checkBwin();
+                    });
         }
 
         function initialize(){  //function for initialize the game setting
 
-            var aibol = document.getElementsByName("players");
-            var temp = "";
-            for(var i=0; i<aibol.length;i++){
-                if(aibol[i].checked){
-                    temp = aibol[i].value;
-                }
-            }
-            switch (temp){
-                case "1":
-                    ai_on = true;
-                    break;
-                case "2":
-                    ai_on = false;
-                    break;
-            }
-            for(var i=0; i<aibol.length;i++){
-                aibol[i].disabled = true;
-            }
-
-            for(var i=1; i<3;i++){
+          for(var i=1; i<3;i++){
                 document.getElementById("redchess_"+i).setAttribute("draggable","true");
                 document.getElementById("redchess_"+i).setAttribute("ondragstart","drag(event)");
             }
@@ -173,39 +167,208 @@
                     document.getElementById("chess_"+i).setAttribute("reserved", "0");
                 }
             }
+            write_chess_posi();
+            write_board();
+            write_turn(player);
         }
 
         function changeplayer(x){   //fucntion for changing the round
+
             if(x==1){
+                //alert("disable red");
                 for(var i=1; i<3;i++){
+                    //write_chess_attr(("bluechess_"+i), "draggable", "true");
+                    //write_chess_attr(("bluechess_"+i), "ondragstart", "drag(event)");
                     document.getElementById("bluechess_"+i).setAttribute("draggable","true");
                     document.getElementById("bluechess_"+i).setAttribute("ondragstart", "drag(event)");
                 }
                 for(var i=1; i<3;i++){
+                    //write_chess_attr(("redchess_"+i), "draggable", "false");
+                    //write_chess_attr(("redchess_"+i), "ondragstart", "return false;");
                     document.getElementById("redchess_"+i).setAttribute("draggable","false");
                     document.getElementById("redchess_"+i).setAttribute("ondragstart","return false;");
                 }
-                if(ai_on == true){
-                    ai();
-                }
+                //read_chess_attr();
                 player = 2;
-                document.getElementById("round").innerHTML = "Player " + player;
+                write_turn(player);
+                //document.getElementById("round").innerHTML = "Player " + player;
             }
             else{
+               // alert("disable blue");
                 for(var i=1; i<3;i++){
+                    //write_chess_attr(("bluechess_"+i), "draggable", "false");
+                    //write_chess_attr(("bluechess_"+i), "ondragstart", "return false;");
                     document.getElementById("bluechess_"+i).setAttribute("draggable","false");
                     document.getElementById("bluechess_"+i).setAttribute("ondragstart","return false;");
                 }
                 for(var i=1; i<3;i++){
+                    //write_chess_attr(("redchess_"+i), "draggable", "true");
+                    //write_chess_attr(("redchess_"+i), "ondragstart", "drag(event)");
                     document.getElementById("redchess_"+i).setAttribute("draggable","true");
                     document.getElementById("redchess_"+i).setAttribute("ondragstart", "drag(event)");
                 }
+                //read_chess_attr();
                 player = 1;
-                document.getElementById("round").innerHTML = "Player " + player;
+                write_turn(player);
+                //document.getElementById("round").innerHTML = "Player " + player;
             }
-            time = 30;
+            time = 60;
         }
 
+        function checkBwin(){
+            if((document.getElementById("redchess_1").parentNode.getAttribute("value")=="1" || document.getElementById("redchess_1").parentNode.getAttribute("value")=="4") &&
+                    (document.getElementById("redchess_2").parentNode.getAttribute("value")=="4" || document.getElementById("redchess_2").parentNode.getAttribute("value")=="1")){
+                if(document.getElementById("bluechess_1").parentNode.getAttribute("value")=="3" && document.getElementById("bluechess_2").parentNode.getAttribute("value")=="5"){
+                    alert("Player 2 Win!!!!!");
+                    var para = getURLParameter('username');
+                    $(document).ready(function(){
+                        $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                                {
+                                    Username: para
+                                },
+                                function () {
+                                });
+                    });
+                    clearInterval(timecount);
+                    clearInterval(reset_chess);
+                    $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
+                    //document.location.reload();
+                    window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
+                }
+                else if(document.getElementById("bluechess_1").parentNode.getAttribute("value")=="5" && document.getElementById("bluechess_2").parentNode.getAttribute("value")=="3"){
+                    alert("Player 2 Win!!!!!");
+                    var para = getURLParameter('username');
+                    $(document).ready(function(){
+                        $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                                {
+                                    Username: para
+                                },
+                                function () {
+                                });
+                    });
+                    clearInterval(timecount);
+                    clearInterval(reset_chess);
+                    $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
+                    //document.location.reload();
+                    window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
+                }
+            }
+            else if((document.getElementById("redchess_1").parentNode.getAttribute("value")=="2" || document.getElementById("redchess_1").parentNode.getAttribute("value")=="5") &&
+                    (document.getElementById("redchess_2").parentNode.getAttribute("value")=="2" || document.getElementById("redchess_2").parentNode.getAttribute("value")=="5")) {
+                if (document.getElementById("bluechess_1").parentNode.getAttribute("value") == "3" && document.getElementById("bluechess_2").parentNode.getAttribute("value") == "4") {
+                    alert("Player 2 Win!!!!!");
+                    var para = getURLParameter('username');
+                    $(document).ready(function(){
+                        $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                                {
+                                    Username: para
+                                },
+                                function () {
+                                });
+                    });
+                    clearInterval(timecount);
+                    clearInterval(reset_chess);
+                    $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
+                    //document.location.reload();
+                    window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
+                }
+                else if (document.getElementById("bluechess_1").parentNode.getAttribute("value") == "4" && document.getElementById("bluechess_2").parentNode.getAttribute("value") == "3") {
+                    alert("Player 2 Win!!!!!");
+                    var para = getURLParameter('username');
+                    $(document).ready(function(){
+                        $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                                {
+                                    Username: para
+                                },
+                                function () {
+                                });
+                    });
+                    clearInterval(timecount);
+                    clearInterval(reset_chess);
+                    $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
+                    //document.location.reload();
+                    window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
+                }
+            }
+        }
+
+        function checkRwin(){
+            if((document.getElementById("bluechess_1").parentNode.getAttribute("value")=="1" || document.getElementById("bluechess_1").parentNode.getAttribute("value")=="4") &&
+                    (document.getElementById("bluechess_2").parentNode.getAttribute("value")=="4" || document.getElementById("bluechess_2").parentNode.getAttribute("value")=="1")){
+                if(document.getElementById("redchess_1").parentNode.getAttribute("value")=="3" && document.getElementById("redchess_2").parentNode.getAttribute("value")=="5"){
+                    alert("Player 1 Win!!!!!");
+                    var para = getURLParameter('username');
+                    $(document).ready(function(){
+                        $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                                {
+                                    Username: para
+                                },
+                                function () {
+                                });
+                    });
+                    clearInterval(timecount);
+                    clearInterval(reset_chess);
+                    $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
+                    //document.location.reload();
+                    window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
+                }
+                else if(document.getElementById("redchess_1").parentNode.getAttribute("value")=="5" && document.getElementById("redchess_2").parentNode.getAttribute("value")=="3"){
+                    alert("Player 1 Win!!!!!");
+                    var para = getURLParameter('username');
+                    $(document).ready(function(){
+                        $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                                {
+                                    Username: para
+                                },
+                                function () {
+                                });
+                    });
+                    clearInterval(timecount);
+                    clearInterval(reset_chess);
+                    $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
+                    //document.location.reload();
+                    window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
+                }
+            }
+            else if((document.getElementById("bluechess_1").parentNode.getAttribute("value")=="2" || document.getElementById("bluechess_1").parentNode.getAttribute("value")=="5") &&
+                    (document.getElementById("bluechess_2").parentNode.getAttribute("value")=="2" || document.getElementById("bluechess_2").parentNode.getAttribute("value")=="5")) {
+                if (document.getElementById("redchess_1").parentNode.getAttribute("value") == "3" && document.getElementById("redchess_2").parentNode.getAttribute("value") == "4") {
+                    alert("Player 1 Win!!!!!");
+                    var para = getURLParameter('username');
+                    $(document).ready(function(){
+                        $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                                {
+                                    Username: para
+                                },
+                                function () {
+                                });
+                    });
+                    clearInterval(timecount);
+                    clearInterval(reset_chess);
+                    $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
+                    //document.location.reload();
+                    window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
+                }
+                else if (document.getElementById("redchess_1").parentNode.getAttribute("value") == "4" && document.getElementById("redchess_2").parentNode.getAttribute("value") == "3") {
+                    alert("Player 1 Win!!!!!");
+                    var para = getURLParameter('username');
+                    $(document).ready(function(){
+                        $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                                {
+                                    Username: para
+                                },
+                                function () {
+                                });
+                    });
+                    clearInterval(timecount);
+                    clearInterval(reset_chess);
+                    $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
+                    //document.location.reload();
+                    window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
+                }
+            }
+        }
+        /*
         function checkBwin(){
             for(var i=1; i<3; i++){
                 if(document.getElementById("redchess_"+i).parentNode.getAttribute("value")=="1"){
@@ -261,7 +424,19 @@
             }
             if(Bwinflag1 == true && Bwinflag2 == true){
                 alert("Player 2 Win!!!!!");
+                var para = getURLParameter('username');
+                $(document).ready(function(){
+                $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                        {
+                            Username: para
+                        },
+                        function () {
+                        });
+                });
                 clearInterval(timecount);
+                clearInterval(reset_chess);
+                $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
+                window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
                 //document.location.reload();
             }
         }
@@ -321,11 +496,24 @@
             }
             if(Rwinflag1 == true && Rwinflag2 == true){
                 alert("Player 1 Win!!!!!");
+                var para = getURLParameter('username');
+                $(document).ready(function(){
+                    $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                            {
+                                Username: para
+                            },
+                            function () {
+                            });
+                });
                 clearInterval(timecount);
+                clearInterval(reset_chess);
+                $.get('http://15042824d.coms.hk/COMP3421/php/reset_game.php', function(){});
                 //document.location.reload();
+                window.location.replace('http://15042824d.coms.hk/COMP3421/geo.html');
             }
         }
-
+        */
+        /*
         function ai(){
             var i = 1;
             var ai_flag =false;
@@ -420,10 +608,251 @@
                 i++;
             }
         }
+        */
 
         function readme(){
             window.open ("readme.html");
         }
+
+        function write_chess_posi(){    //write the chess position into server
+
+            var c1= document.getElementById("redchess_1").parentNode.getAttribute("value");
+            var c2= document.getElementById("redchess_2").parentNode.getAttribute("value");
+            var c3= document.getElementById("bluechess_1").parentNode.getAttribute("value");
+            var c4= document.getElementById("bluechess_2").parentNode.getAttribute("value");
+            $(document).ready(function(){
+                $.post("http://15042824d.coms.hk/COMP3421/php/write_chess.php",
+                    {
+                        Rchess1: c1,
+                        Rchess2: c2,
+                        Bchess1: c3,
+                        Bchess2: c4
+                    },
+                    function () {
+                    });
+            });
+        }
+
+        function read_chess_posi(){     //read the chess position from the server and reset the chessboard
+
+            $(document).ready(function(){
+                $.post("http://15042824d.coms.hk/COMP3421/php/read_chess.php",
+                    function (data) {
+                        var temp = data.split("\t");
+                        for(var i=0;i<temp.length;i++){
+                            if(i<2)
+                                $("#chess_"+temp[i]).append($("#redchess_"+(i+1)));
+                            else
+                                $("#chess_"+temp[i]).append($("#bluechess_"+(i-1)));
+                        }
+                    });
+            });
+            read_turn();
+            read_board();
+            checkBwin();
+            checkRwin()
+        }
+
+        function check_player(){     //limit th enumber of connection to the game
+
+            var para = getURLParameter('username');
+
+            if(num_player<3) {
+                $.post("http://15042824d.coms.hk/COMP3421/php/gameroom.php",
+                        {
+                            Username: para,
+                            Player: num_player
+                        },
+                        function (data) {
+                            if (data == "0") {
+                                alert("Waiting for another player.");
+                                num_player = 2;
+                            }
+                            else {
+                                alert("Game Start.");
+                                timecount = setInterval(timer,1000);
+                                num_player=3;
+                            }
+                        });
+            }
+            else{
+                alert("The game is full, please wait");
+            }
+        }
+
+        function getURLParameter(name) {        //get username from the url
+            return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
+        }
+
+        function read_turn(){       //function for monitoring the round change on the server
+            $(document).ready(function(){
+                $.post("http://15042824d.coms.hk/COMP3421/php/read_round.php",
+                        function (data) {
+                           player=data;
+                            set_chess_attr(data);
+                        });
+            });
+            $("#round").html("Player " + player);
+        }
+
+        function write_turn(x){      //function for changing the round on the server
+            $.post("http://15042824d.coms.hk/COMP3421/php/write_round.php",
+                    {
+                        Round: x
+                    },
+                    function () {});
+        }
+
+
+        function write_chess_attr(chessid, chess_attr, attr_val){   //function for wirting chess attribute to the sever
+            $.post("http://15042824d.coms.hk/COMP3421/php/write_attr.php",
+                    {
+                        ID: chessid,
+                        Attribute: chess_attr,
+                        Value: attr_val
+                    },
+                    function () {});
+
+
+        }
+
+        function read_chess_attr(){     //function for get the chess attribute back to client
+            $.post("http://15042824d.coms.hk/COMP3421/php/read_attr.php",
+                    function (data) {
+                        var temp = data.split("\t");
+                        for(var i=0;i<temp.length;i++){
+                            $("#"+temp[0]).attr(temp[1],temp[2]);
+                        }
+                    });
+        }
+
+
+        function add_score(){       //function for adding score to wiiner
+            var para = getURLParameter('username');
+
+            $.post("http://15042824d.coms.hk/COMP3421/php/add_score.php",
+                    {
+                        Username: para
+                    },
+                    function () {});
+
+        }
+
+        function set_chess_attr(x){     //used for set the attribute of chees whether it can move
+            if(x!=1){
+                //alert("disable red");
+                for(var i=1; i<3;i++){
+                    //write_chess_attr(("bluechess_"+i), "draggable", "true");
+                    //write_chess_attr(("bluechess_"+i), "ondragstart", "drag(event)");
+                    document.getElementById("bluechess_"+i).setAttribute("draggable","true");
+                    document.getElementById("bluechess_"+i).setAttribute("ondragstart", "drag(event)");
+                }
+                for(var i=1; i<3;i++){
+                    //write_chess_attr(("redchess_"+i), "draggable", "false");
+                    //write_chess_attr(("redchess_"+i), "ondragstart", "return false;");
+                    document.getElementById("redchess_"+i).setAttribute("draggable","false");
+                    document.getElementById("redchess_"+i).setAttribute("ondragstart","return false;");
+                }
+            }
+            else{
+                // alert("disable blue");
+                for(var i=1; i<3;i++){
+                    //write_chess_attr(("bluechess_"+i), "draggable", "false");
+                    //write_chess_attr(("bluechess_"+i), "ondragstart", "return false;");
+                    document.getElementById("bluechess_"+i).setAttribute("draggable","false");
+                    document.getElementById("bluechess_"+i).setAttribute("ondragstart","return false;");
+                }
+                for(var i=1; i<3;i++){
+                    //write_chess_attr(("redchess_"+i), "draggable", "true");
+                    //write_chess_attr(("redchess_"+i), "ondragstart", "drag(event)");
+                    document.getElementById("redchess_"+i).setAttribute("draggable","true");
+                    document.getElementById("redchess_"+i).setAttribute("ondragstart", "drag(event)");
+                }
+            }
+        }
+
+        function write_board(){     //function for send the chessboard information to server
+
+            var c1= document.getElementById("chess_1").getAttribute("reserved");
+            var c2= document.getElementById("chess_2").getAttribute("reserved");
+            var c3= document.getElementById("chess_3").getAttribute("reserved");
+            var c4= document.getElementById("chess_4").getAttribute("reserved");
+            var c5= document.getElementById("chess_5").getAttribute("reserved");
+
+            $(document).ready(function(){
+                $.post("http://15042824d.coms.hk/COMP3421/php/board.php",
+                        {
+                            chess1: c1,
+                            chess2: c2,
+                            chess3: c3,
+                            chess4: c4,
+                            chess5: c5
+                        },
+                        function () {
+                        });
+            });
+        }
+
+        function read_board(){      //update the board information
+            $(document).ready(function(){
+                $.post("http://15042824d.coms.hk/COMP3421/php/read_board.php",
+                        function (data) {
+                            var temp = data.split("\t");
+                            for(var i=0;i<temp.length;i++){
+                                $("#chess_"+(i+1)).attr("reserved", temp[i]);
+                            }
+                        });
+            });
+
+        }
+
+
+
+        /*
+        function checkwin(){
+
+            $(document).ready(function(){
+                $.post("http://15042824d.coms.hk/COMP3421/php/read_chess.php",
+                        function (data) {
+                            var temp = data.split("\t");
+                            if(player ==2) {
+                                if (temp[0] == 1 && temp[1] == 4) {
+                                    if ((temp[2] == 3 || temp[2] == 5) && (temp[3] == 3 || temp[3] == 5)) {
+                                        alert("Player 2 Win!!!!!");
+                                        clearInterval(timecount);
+                                        clearInterval(reset_chess);
+                                    }
+                                }
+                                else if (temp[0] == 2 && temp[1] == 5) {
+                                    if ((temp[2] == 3 || temp[2] == 4) && (temp[3] == 3 || temp[3] == 4)) {
+                                        alert("Player 2 Win!!!!!");
+                                        clearInterval(timecount);
+                                        clearInterval(reset_chess);
+                                    }
+                                }
+                            }
+                            else{
+                                if (temp[2] == 1 && temp[3] == 4) {
+                                    if ((temp[0] == 3 || temp[0] == 5) && (temp[1] == 3 || temp[1] == 5)) {
+                                        alert("Player 1 Win!!!!!");
+                                        clearInterval(timecount);
+                                        clearInterval(reset_chess);
+                                    }
+                                }
+                                else if (temp[2] == 2 && temp[3] == 5) {
+                                    if ((temp[0] == 3 || temp[0] == 4) && (temp[1] == 3 || temp[1] == 4)) {
+                                        alert("Player 1 Win!!!!!");
+                                        clearInterval(timecount);
+                                        clearInterval(reset_chess);
+                                    }
+                                }
+
+                            }
+                        });
+            });
+
+        }
+        */
 
     </script>
 </head>
@@ -451,19 +880,14 @@
 
     <br>
     <div>Timer:</div>
-    <div id="counter">30</div>
+    <div id="counter">60</div>
 
-    <br>
-    <div>Number of player:</div>
-    <input type="radio" name="players" value="1" checked> 1
-    <input type="radio" name="players" value="2"> 2
     <br><br>
 
     <button class="button" onclick="start()"> Start </button>
     <button class="button" onclick="stop()"> Stop </button>
     <br><br>
-    <button class="button" onclick="readme()"> Read Me </button>
-
+    <button class="button" onclick="readme()">Readme</button>
 
 </div>
 </body>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        $("#reg").click(function(){
+            //alert("regtest");
+            window.open ('http://15042824d.coms.hk/COMP3421/registration.html');
+        });
+    });
+
+    $(document).ready(function(){
+        $("#submit").click(function(e){
+            e.preventDefault();
+            if( $("#ac").val().length==0 || $("#pw").val().length==0){
+                alert("Please fill in all fields");
+            }
+            else{
+                $.post("http://15042824d.coms.hk/COMP3421/php/login.php",
+                        {
+                            Username:  $("#ac").val(),
+                            Password:  $("#pw").val()
+                        },
+                function(data){
+                    if(data=="0"){
+                        alert("Wrong username or password");
+                    }
+                    else if(data=="1"){
+                           //alert("localStorage.userflag");
+                           window.location.replace('http://15042824d.coms.hk/COMP3421/PongHuaKi.html'+'?username='+ $("#ac").val());
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<body>
+<center>
+    <p style="font-size: 24px"> Pong Hau Ki </p>
+    <form style="width:100%; align: center">
+        User Name:<br>
+        <input type="text" name="username" id="ac"><br>
+        Password: <br>
+        <input type="password" name="password" id="pw"><br><br>
+        <button id="submit">Submit</button>
+        <button id="reg"> Register </button>
+    </form>
+</center>
+</body>
+</html>
