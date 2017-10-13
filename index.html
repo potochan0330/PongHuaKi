@@ -10,7 +10,7 @@
     $(document).ready(function(){
         $("#reg").click(function(){
             //alert("regtest");
-            window.open ('http://15042824d.coms.hk/COMP3421/registration.html');
+            window.open ('registration.html');
         });
     });
 
@@ -21,7 +21,7 @@
                 alert("Please fill in all fields");
             }
             else{
-                $.post("http://15042824d.coms.hk/COMP3421/php/login.php",
+                $.post("php/login.php",
                         {
                             Username:  $("#ac").val(),
                             Password:  $("#pw").val()
@@ -32,7 +32,7 @@
                     }
                     else if(data=="1"){
                            //alert("localStorage.userflag");
-                           window.location.replace('http://15042824d.coms.hk/COMP3421/PongHuaKi.html'+'?username='+ $("#ac").val());
+                           window.location.replace('PongHuaKi.html');
                     }
                 });
             }
