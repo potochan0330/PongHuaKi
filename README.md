@@ -7,7 +7,7 @@ Board Game - PongHuaKi
           2. Click Start button.
 
 
-          Rules:
+    Rules:
           1. Each player can only move 1 chess in 1 round.
           2. The round will pass to opponent if the timer goes to 0.
           3. The chess can just move to the position that have lines connection to its own position
@@ -17,5 +17,5 @@ Board Game - PongHuaKi
           7. The game will be stop by clicking the Stop button.
 
 
-          How to win:
+    How to win:
           If one of the player cannot move the chess anymore, the opponent player win.
