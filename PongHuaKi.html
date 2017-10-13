@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pong Hua Ki</title>
+    <link rel="stylesheet" type="text/css" href="q1css.css">
+
+    <script>
+        var time = 30;
+        var player = 1;
+        var board_size = 6;
+        var DragParentNode = null;
+        var Rwinflag1 = false;
+        var Rwinflag2 = false;
+        var Bwinflag1 = false;
+        var Bwinflag2 = false;
+        var ai_on = false;
+        var timecount;
+
+        function start(){
+            initialize();
+            timecount = setInterval(timer,1000);
+        }
+
+        function stop() {   //stop the game
+            document.location.reload();
+        }
+
+        function timer(){   //timer for the round change
+            if(time==0){
+                time = 30;
+                changeplayer(player);
+                alert("Time's Up, Pass round to Player "+player);
+            }
+            document.getElementById("counter").innerHTML = time.toString();
+            time--;
+        }
+
+        function allowDrop(ev) {    //place for dropping the chess
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            DragParentNode = ev.target.parentNode;
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+            if(ev.target.getAttribute("reserved")=="0") {
+                switch (DragParentNode.getAttribute("value")){
+                    case "1":
+                        if(ev.target.getAttribute("value") == "3" || ev.target.getAttribute("value") == "4"){
+                            ev.target.appendChild(document.getElementById(data));
+                            ev.target.setAttribute("reserved", "1");
+                            DragParentNode.setAttribute("reserved", "0");
+                            if(ai_on == true){
+                                ai();
+                            }
+                            else{
+                                changeplayer(player);
+                            }
+                        }
+                        else {
+                            alert("Too far to move!");
+                        }
+                        break;
+                    case "2":
+                        if(ev.target.getAttribute("value") == "3" || ev.target.getAttribute("value") == "5"){
+                            ev.target.appendChild(document.getElementById(data));
+                            ev.target.setAttribute("reserved", "1");
+                            DragParentNode.setAttribute("reserved", "0");
+                            if(ai_on == true){
+                                ai();
+                            }
+                            else{
+                                changeplayer(player);
+                            }
+                        }
+                        else {
+                            alert("Too far to move!");
+                        }
+                        break;
+                    case "4":
+                        if(ev.target.getAttribute("value") != "2"){
+                            ev.target.appendChild(document.getElementById(data));
+                            ev.target.setAttribute("reserved", "1");
+                            DragParentNode.setAttribute("reserved", "0");
+                            if(ai_on == true){
+                                ai();
+                            }
+                            else{
+                                changeplayer(player);
+                            }
+                        }
+                        else {
+                            alert("Too far to move!");v
+                        }
+                        break;
+                    case "5":
+                        if(ev.target.getAttribute("value") != "1"){
+                            ev.target.appendChild(document.getElementById(data));
+                            ev.target.setAttribute("reserved", "1");
+                            DragParentNode.setAttribute("reserved", "0");
+                            if(ai_on == true){
+                                ai();
+                            }
+                            else{
+                                changeplayer(player);
+                            }
+                        }
+                        else {
+                            alert("Too far to move!");
+                        }
+                        break;
+                    default:
+                        ev.target.appendChild(document.getElementById(data));
+                        ev.target.setAttribute("reserved", "1");
+                        DragParentNode.setAttribute("reserved", "0");
+                        if(ai_on == true){
+                            ai();
+                        }
+                        else{
+                            changeplayer(player);
+                        }
+                        break;
+                }
+            }
+            checkRwin();
+            checkBwin();
+        }
+
+        function initialize(){  //function for initialize the game setting
+
+            var aibol = document.getElementsByName("players");
+            var temp = "";
+            for(var i=0; i<aibol.length;i++){
+                if(aibol[i].checked){
+                    temp = aibol[i].value;
+                }
+            }
+            switch (temp){
+                case "1":
+                    ai_on = true;
+                    break;
+                case "2":
+                    ai_on = false;
+                    break;
+            }
+            for(var i=0; i<aibol.length;i++){
+                aibol[i].disabled = true;
+            }
+
+            for(var i=1; i<3;i++){
+                document.getElementById("redchess_"+i).setAttribute("draggable","true");
+                document.getElementById("redchess_"+i).setAttribute("ondragstart","drag(event)");
+            }
+
+            for(var i=1; i<3;i++){
+                document.getElementById("bluechess_"+i).setAttribute("draggable","false");
+                document.getElementById("bluechess_"+i).setAttribute("ondragstart","return false;");
+            }
+
+            for(var i=1; i<board_size;i++) {
+                document.getElementById("chess_" + i).setAttribute("ondrop", "drop(event)");
+                document.getElementById("chess_"+i).setAttribute("ondragover","allowDrop(event)");
+
+                if(i!=3){
+                    document.getElementById("chess_"+i).setAttribute("reserved", "1");
+                }
+                else{
+                    document.getElementById("chess_"+i).setAttribute("reserved", "0");
+                }
+            }
+        }
+
+        function changeplayer(x){   //fucntion for changing the round
+            if(x==1){
+                for(var i=1; i<3;i++){
+                    document.getElementById("bluechess_"+i).setAttribute("draggable","true");
+                    document.getElementById("bluechess_"+i).setAttribute("ondragstart", "drag(event)");
+                }
+                for(var i=1; i<3;i++){
+                    document.getElementById("redchess_"+i).setAttribute("draggable","false");
+                    document.getElementById("redchess_"+i).setAttribute("ondragstart","return false;");
+                }
+                if(ai_on == true){
+                    ai();
+                }
+                player = 2;
+                document.getElementById("round").innerHTML = "Player " + player;
+            }
+            else{
+                for(var i=1; i<3;i++){
+                    document.getElementById("bluechess_"+i).setAttribute("draggable","false");
+                    document.getElementById("bluechess_"+i).setAttribute("ondragstart","return false;");
+                }
+                for(var i=1; i<3;i++){
+                    document.getElementById("redchess_"+i).setAttribute("draggable","true");
+                    document.getElementById("redchess_"+i).setAttribute("ondragstart", "drag(event)");
+                }
+                player = 1;
+                document.getElementById("round").innerHTML = "Player " + player;
+            }
+            time = 30;
+        }
+
+        function checkBwin(){
+            for(var i=1; i<3; i++){
+                if(document.getElementById("redchess_"+i).parentNode.getAttribute("value")=="1"){
+                    if((document.getElementById("chess_3").getAttribute("reserved"))=="1" && (document.getElementById("chess_4").getAttribute("reserved")=="1")){
+                        if(i==1){
+                            Bwinflag1 = true;
+                            Bwinflag2 = false;
+                        }
+                        else{
+                            Bwinflag2 = true;
+                        }
+                    }
+                }
+                else if(document.getElementById("redchess_"+i).parentNode.getAttribute("value")=="2") {
+                    if ((document.getElementById("chess_3").getAttribute("reserved"))=="1" && ((document.getElementById("chess_5").getAttribute("reserved"))=="1")) {
+                        if(i==1){
+                            Bwinflag1 = true;
+                            Bwinflag2 = false;
+                        }
+                        else{
+                            Bwinflag2 = true;
+                        }
+                    }
+                }
+                else if(document.getElementById("redchess_"+i).parentNode.getAttribute("value")=="4") {
+                    if ((document.getElementById("chess_1").getAttribute("reserved"))=="1" && (document.getElementById("chess_3").getAttribute("reserved")=="1")
+                            && (document.getElementById("chess_5").getAttribute("reserved")=="1")) {
+                        if(i==1){
+                            Bwinflag1 = true;
+                            Bwinflag2 = false;
+                        }
+                        else{
+                            Bwinflag2 = true;
+                        }
+                    }
+                }
+                else if(document.getElementById("redchess_"+i).parentNode.getAttribute("value")=="5") {
+                    if ((document.getElementById("chess_2").getAttribute("reserved"))=="1" && (document.getElementById("chess_3").getAttribute("reserved")=="1")
+                            && (document.getElementById("chess_4").getAttribute("reserved")=="1")) {
+                        if(i==1){
+                            Bwinflag1 = true;
+                            Bwinflag2 = false;
+                        }
+                        else{
+                            Bwinflag2 = true;
+                        }
+                    }
+                }
+                else{
+                    Bwinflag1 = false;
+                    Bwinflag2 = false;
+                }
+            }
+            if(Bwinflag1 == true && Bwinflag2 == true){
+                alert("Player 2 Win!!!!!");
+                clearInterval(timecount);
+                //document.location.reload();
+            }
+        }
+
+        function checkRwin(){
+            for(var i=1; i<3; i++){
+                if(document.getElementById("bluechess_"+i).parentNode.getAttribute("value")=="1"){
+                    if((document.getElementById("chess_3").getAttribute("reserved"))=="1" && (document.getElementById("chess_4").getAttribute("reserved")=="1")){
+                        if(i==1){
+                            Rwinflag1 = true;
+                            Rwinflag2 = false;
+                        }
+                        else{
+                            Rwinflag2 = true;
+                        }
+                    }
+                }
+                else if(document.getElementById("bluechess_"+i).parentNode.getAttribute("value")=="2") {
+                    if ((document.getElementById("chess_3").getAttribute("reserved"))=="1" && ((document.getElementById("chess_5").getAttribute("reserved"))=="1")) {
+                        if(i==1){
+                            Rwinflag1 = true;
+                            Rwinflag2 = false;
+                        }
+                        else{
+                            Rwinflag2 = true;
+                        }
+                    }
+                }
+                else if(document.getElementById("bluechess_"+i).parentNode.getAttribute("value")=="4") {
+                    if ((document.getElementById("chess_1").getAttribute("reserved"))=="1" && (document.getElementById("chess_3").getAttribute("reserved")=="1")
+                            && (document.getElementById("chess_5").getAttribute("reserved")=="1")) {
+                        if(i==1){
+                            Rwinflag1 = true;
+                            Rwinflag2 = false;
+                        }
+                        else{
+                            Rwinflag2 = true;
+                        }
+                    }
+                }
+                else if(document.getElementById("bluechess_"+i).parentNode.getAttribute("value")=="5") {
+                    if ((document.getElementById("chess_2").getAttribute("reserved"))=="1" && (document.getElementById("chess_3").getAttribute("reserved")=="1")
+                            && (document.getElementById("chess_4").getAttribute("reserved")=="1")) {
+                        if(i==1){
+                            Rwinflag1 = true;
+                            Rwinflag2 = false;
+                        }
+                        else{
+                            Rwinflag2 = true;
+                        }
+                    }
+                }
+                else{
+                    Rwinflag1 = false;
+                    Rwinflag2 = false;
+                }
+            }
+            if(Rwinflag1 == true && Rwinflag2 == true){
+                alert("Player 1 Win!!!!!");
+                clearInterval(timecount);
+                //document.location.reload();
+            }
+        }
+
+        function ai(){
+            var i = 1;
+            var ai_flag =false;
+            while(i<3 && ai_flag == false){
+                if(document.getElementById("bluechess_"+i).parentNode.getAttribute("value")=="1"){
+                    for(var j=1;j<6;j++){
+                        if(j!=1&&j!=2&&j!=5){
+                            if(document.getElementById("chess_"+j).getAttribute("reserved")=="0"){
+                                document.getElementById("bluechess_"+i).parentNode.setAttribute("reserved", "0");
+                                var data = document.getElementById("bluechess_"+i);
+                                document.getElementById("chess_"+j).appendChild(data);
+                                document.getElementById("chess_"+j).setAttribute("reserved", "1");
+                                ai_flag = true;
+                                player = 2;
+                                changeplayer(player);
+                                //alert("move blue at 1");
+                            }
+                        }
+                    }
+                    //alert("chaneplayer");
+                }
+                else if(document.getElementById("bluechess_"+i).parentNode.getAttribute("value")=="2"){
+                    for(var j=1;j<6;j++){
+                        if(j!=4&&j!=1){
+                            if(document.getElementById("chess_"+j).getAttribute("reserved")=="0"){
+                                document.getElementById("bluechess_"+i).parentNode.setAttribute("reserved", "0");
+                                var data = document.getElementById("bluechess_"+i);
+                                document.getElementById("chess_"+j).appendChild(data);
+                                document.getElementById("chess_"+j).setAttribute("reserved", "1");
+                                ai_flag = true;
+                                player = 2;
+                                changeplayer(player);
+                                //alert("move blue at 2");
+                            }
+                        }
+                    }
+                    //alert("chaneplayer");
+                }
+                else if (document.getElementById("bluechess_"+i).parentNode.getAttribute("value")=="4"){
+                    for(var j=1;j<6;j++){
+                        if(j==1 || j==3 || j==5){
+                            if(document.getElementById("chess_"+j).getAttribute("reserved")=="0"){
+                                document.getElementById("bluechess_"+i).parentNode.setAttribute("reserved", "0");
+                                var data = document.getElementById("bluechess_"+i);
+                                document.getElementById("chess_"+j).appendChild(data);
+                                document.getElementById("chess_"+j).setAttribute("reserved", "1");
+                                ai_flag = true;
+                                player = 2;
+                                changeplayer(player);
+                                //alert("move blue at 4");
+                                break;
+                            }
+                        }
+                    }
+                    //alert("chaneplayer");
+                }
+                else if (document.getElementById("bluechess_"+i).parentNode.getAttribute("value")=="5"){
+                    for(var j=1;j<6;j++){
+                        if(j==2 || j==3 || j==4){
+                            if(document.getElementById("chess_"+j).getAttribute("reserved")=="0"){
+                                document.getElementById("bluechess_"+i).parentNode.setAttribute("reserved", "0");
+                                var data = document.getElementById("bluechess_"+i);
+                                document.getElementById("chess_"+j).appendChild(data);
+                                document.getElementById("chess_"+j).setAttribute("reserved", "1");
+                                ai_flag = true;
+                                player = 2;
+                                changeplayer(player);
+                                //alert("move blue at 5");
+                                break;
+                            }
+                        }
+                    }
+                    // alert("chaneplayer");
+                }
+                else if (document.getElementById("bluechess_"+i).parentNode.getAttribute("value")=="3"){
+                    for(var j=1;j<6;j++){
+                        if(j!=3){
+                            if(document.getElementById("chess_"+j).getAttribute("reserved")=="0"){
+                                document.getElementById("bluechess_"+i).parentNode.setAttribute("reserved", "0");
+                                var data = document.getElementById("bluechess_"+i);
+                                document.getElementById("chess_"+j).appendChild(data);
+                                document.getElementById("chess_"+j).setAttribute("reserved", "1");
+                                ai_flag = true;
+                                player = 2;
+                                changeplayer(player);
+                                //alert("move blue at 3");
+                            }
+                        }
+                    }
+                    //alert("chaneplayer");
+                }
+                i++;
+            }
+        }
+
+        function readme(){
+            window.open ("readme.html");
+        }
+
+    </script>
+</head>
+<body>
+<div class="board">
+    <div id="chess_1" class="chess" style="top: 20px; left: 15px;" value="1">
+        <div id="redchess_1" class="rchess" ></div>
+    </div>
+    <div id="chess_4" class="chess" style="top: 310px; left: 15px;" value="4">
+        <div id="bluechess_1" class="bchess"></div>
+    </div>
+    <div id="chess_2" class="chess" style="top: 20px; left: 310px;" value="2">
+        <div id="redchess_2" class="rchess"></div>
+    </div>
+    <div id="chess_5" class="chess" style="top: 310px; left: 310px;" value="5">
+        <div id="bluechess_2" class="bchess"></div>
+    </div>
+    <div id="chess_3" class="chess" style="top: 155px; left: 165px;" value="3">
+    </div>
+</div>
+<div class="setting">
+    <br>
+    <div>Round:</div>
+    <div id="round">Player 1</div>
+
+    <br>
+    <div>Timer:</div>
+    <div id="counter">30</div>
+
+    <br>
+    <div>Number of player:</div>
+    <input type="radio" name="players" value="1" checked> 1
+    <input type="radio" name="players" value="2"> 2
+    <br><br>
+
+    <button class="button" onclick="start()"> Start </button>
+    <button class="button" onclick="stop()"> Stop </button>
+    <br><br>
+    <button class="button" onclick="readme()"> Read Me </button>
+
+
+</div>
+</body>
+</html>

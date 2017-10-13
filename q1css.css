@@ -1,0 +1,45 @@
+div{
+    font-size: 24px;
+    text-align: center;
+}
+
+div.board
+{
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: url("phk.jpg") no-repeat center;
+}
+
+div.setting{
+    position: absolute;
+    left:420px;
+    width: 300px;
+    height: 400px;
+}
+
+div.chess{
+    position: absolute;
+    height: 70px;
+    width: 70px;
+}
+
+div.rchess{
+    position: absolute;
+    border-radius: 50%;
+    height: 70px;
+    width: 70px;
+    background-color: red;
+}
+
+div.bchess{
+    position: absolute;
+    border-radius: 50%;
+    height: 70px;
+    width: 70px;
+    background-color: blue;
+}
+
+button{
+    font-size: 24px;
+}
